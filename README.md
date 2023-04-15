@@ -23,14 +23,6 @@ This code is a simple implementation of a login system and is not intended for p
 - There is no mechanism for password recovery or account deletion.
 - The user interface is basic and does not include any error handling or input validation.
 
-## Future Work
-
-Possible future work on this code could include:
-
-- Implementing more secure password hashing and storage mechanisms.
-- Storing user information in a database instead of a text file.
-- Adding features such as password recovery and account deletion.
-- Improving the user interface with error handling and input validation.
 
 ## Credits
 
