@@ -2,8 +2,22 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <openssl/sha.h>
 
 using namespace std;
+
+string sha256(const string str) {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, str.c_str(), str.size());
+    SHA256_Final(hash, &sha256);
+    stringstream ss;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        ss << hex << setw(2) << setfill('0') << (int)hash[i];
+    }
+    return ss.str();
+}
 
 bool isUsernameTaken(string username) {
     ifstream file("users.txt");
@@ -26,8 +40,9 @@ void signup() {
     }
     cout << "Enter a password: ";
     cin >> password;
+    string hashed_password = sha256(password);
     ofstream file("users.txt", ios::app);
-    file << username << "," << password << endl;
+    file << username << "," << hashed_password << endl;
     cout << "Signup successful." << endl;
 }
 
@@ -37,10 +52,11 @@ bool login() {
     cin >> username;
     cout << "Enter your password: ";
     cin >> password;
+    string hashed_password = sha256(password);
     ifstream file("users.txt");
     string line;
     while (getline(file, line)) {
-        if (line == username + "," + password) {
+        if (line == username + "," + hashed_password) {
             return true;
         }
     }
@@ -54,6 +70,7 @@ void resetPassword() {
     cin >> username;
     cout << "Enter your old password: ";
     cin >> oldPassword;
+    string hashed_oldPassword = sha256(oldPassword);
     if (!isUsernameTaken(username)) {
         cout << "Invalid username. Please try again." << endl;
         return;
@@ -63,11 +80,12 @@ void resetPassword() {
     string line;
     bool found = false;
     while (getline(fileIn, line)) {
-        if (line == username + "," + oldPassword) {
+        if (line == username + "," + hashed_oldPassword) {
             found = true;
             cout << "Enter your new password: ";
             cin >> newPassword;
-            fileOut << username << "," << newPassword << endl;
+            string hashed_newPassword = sha256(newPassword);
+            fileOut << username << "," << hashed_newPassword << endl;
             cout << "Password reset successful." << endl;
         }
         else {
@@ -91,7 +109,8 @@ int main() {
         cout << "1. Signup" << endl;
         cout << "2. Login" << endl;
         cout << "3. Reset password" << endl;
-        cout << "4. Quit" << endl;
+        cout << "4. Quit" << endl
+
         cout << "Enter your choice (1-4): ";
         cin >> choice;
         switch (choice) {
