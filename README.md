@@ -26,4 +26,4 @@ This code is a simple implementation of a login system and is not intended for p
 
 ## Credits
 
-This code was written by [ABXDev].
+This code was written by [MalX].
