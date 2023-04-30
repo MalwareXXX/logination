@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 #include <openssl/sha.h>
 
 using namespace std;
@@ -76,7 +78,7 @@ void resetPassword() {
         return;
     }
     ifstream fileIn("users.txt");
-    ofstream fileOut("temp.txt", ios::app);
+    ofstream fileOut("temp.txt");
     string line;
     bool found = false;
     while (getline(fileIn, line)) {
@@ -102,37 +104,33 @@ void resetPassword() {
 }
 
 int main() {
-    int choice;
-    auto start = chrono::high_resolution_clock::now();
-    do {
-        cout << "Choose an option:" << endl;
-        cout << "1. Signup" << endl;
-        cout << "2. Login" << endl;
-        cout << "3. Reset password" << endl;
-        cout << "4. Quit" << endl
-
-        cout << "Enter your choice (1-4): ";
-        cin >> choice;
-        switch (choice) {
-            case 1:
-                signup();
-                break;
-            case 2:
-                if (login()) {
-                    cout << "You have logged in!" << endl;
-                }
-                break;
-            case 3:
-                resetPassword();
-                break;
-            case 4:
-                break;
-            default:
-                cout << "Invalid choice. Please try again." << endl;
-        }
-    } while (choice != 4);
-    auto end = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed = end - start;
-    cout << "Total time taken: " << elapsed.count() << " seconds." << endl;
-    return 0;
+int choice;
+do {
+cout << "Choose an option:" << endl;
+cout << "1. Signup" << endl;
+cout << "2. Login" << endl;
+cout << "3. Reset Password" << endl;
+cout << "4. Exit" << endl;
+cin >> choice;
+switch (choice) {
+case 1:
+signup();
+break;
+case 2:
+if (login()) {
+cout << "Login successful." << endl;
+}
+break;
+case 3:
+resetPassword();
+break;
+case 4:
+cout << "Goodbye!" << endl;
+break;
+default:
+cout << "Invalid choice. Please try again." << endl;
+break;
+}
+} while (choice != 4);
+return 0;
 }
