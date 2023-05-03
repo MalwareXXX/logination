@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -31,6 +33,18 @@ bool isUsernameTaken(string username) {
     }
     return false;
 }
+string generateRandomPassword(int length) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    string password = "";
+    srand(time(NULL));
+    for (int i = 0; i < length; ++i) {
+        password += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+    return password;
+}
 
 void signup() {
     string username, password;
@@ -40,8 +54,19 @@ void signup() {
         cout << "Username already taken. Please try again." << endl;
         return;
     }
-    cout << "Enter a password: ";
-    cin >> password;
+    cout << "Would you like to generate a random password? (Y/N) ";
+    char choice;
+    cin >> choice;
+    if (tolower(choice) == 'y') {
+        int length;
+        cout << "Enter the length of the password: ";
+        cin >> length;
+        password = generateRandomPassword(length);
+        cout << "Generated password: " << password << endl;
+    } else {
+        cout << "Enter a password: ";
+        cin >> password;
+    }
     string hashed_password = sha256(password);
     ofstream file("users.txt", ios::app);
     file << username << "," << hashed_password << endl;
