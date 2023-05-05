@@ -6,6 +6,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <unordered_map>
 #include <openssl/sha.h>
 
 using namespace std;
@@ -23,16 +24,10 @@ string sha256(const string str) {
     return ss.str();
 }
 
-bool isUsernameTaken(string username) {
-    ifstream file("users.txt");
-    string line;
-    while (getline(file, line)) {
-        if (line.substr(0, line.find(",")) == username) {
-            return true;
-        }
-    }
-    return false;
+bool isUsernameTaken(string username, unordered_map<string, string>& users) {
+    return users.find(username) != users.end();
 }
+
 string generateRandomPassword(int length) {
     static const char alphanum[] =
         "0123456789"
@@ -46,11 +41,11 @@ string generateRandomPassword(int length) {
     return password;
 }
 
-void signup() {
+void signup(unordered_map<string, string>& users) {
     string username, password;
     cout << "Enter a username: ";
     cin >> username;
-    if (isUsernameTaken(username)) {
+    if (isUsernameTaken(username, users)) {
         cout << "Username already taken. Please try again." << endl;
         return;
     }
@@ -68,94 +63,54 @@ void signup() {
         cin >> password;
     }
     string hashed_password = sha256(password);
+    users[username] = hashed_password;
     ofstream file("users.txt", ios::app);
     file << username << "," << hashed_password << endl;
     cout << "Signup successful." << endl;
 }
 
-bool login() {
+bool login(unordered_map<string, string>& users) {
     string username, password;
     cout << "Enter your username: ";
     cin >> username;
     cout << "Enter your password: ";
     cin >> password;
     string hashed_password = sha256(password);
-    ifstream file("users.txt");
-    string line;
-    while (getline(file, line)) {
-        if (line == username + "," + hashed_password) {
-            return true;
-        }
+    if (users.find(username) != users.end() && users[username] == hashed_password) {
+        return true;
     }
     cout << "Invalid username or password. Please try again." << endl;
     return false;
 }
 
-void resetPassword() {
+void resetPassword(unordered_map<string, string>& users) {
     string username, oldPassword, newPassword;
     cout << "Enter your username: ";
     cin >> username;
     cout << "Enter your old password: ";
     cin >> oldPassword;
     string hashed_oldPassword = sha256(oldPassword);
-    if (!isUsernameTaken(username)) {
+    if (!isUsernameTaken(username, users)) {
         cout << "Invalid username. Please try again." << endl;
         return;
     }
-    ifstream fileIn("users.txt");
-    ofstream fileOut("temp.txt");
-    string line;
-    bool found = false;
-    while (getline(fileIn, line)) {
-        if (line == username + "," + hashed_oldPassword) {
+    cout << "Enter your new password: ";
+    cin >> newPassword;
+    string hashed_newPassword = sha256(newPassword);
+    fileOut << username << "," << hashed_newPassword << endl;
+    cout << "Password reset successful." << endl;
             found = true;
-            cout << "Enter your new password: ";
-            cin >> newPassword;
-            string hashed_newPassword = sha256(newPassword);
-            fileOut << username << "," << hashed_newPassword << endl;
-            cout << "Password reset successful." << endl;
-        }
-        else {
+        } else {
             fileOut << line << endl;
         }
     }
     fileIn.close();
     fileOut.close();
+
     remove("users.txt");
     rename("temp.txt", "users.txt");
+
     if (!found) {
         cout << "Invalid username or password. Please try again." << endl;
     }
-}
-
-int main() {
-int choice;
-do {
-cout << "Choose an option:" << endl;
-cout << "1. Signup" << endl;
-cout << "2. Login" << endl;
-cout << "3. Reset Password" << endl;
-cout << "4. Exit" << endl;
-cin >> choice;
-switch (choice) {
-case 1:
-signup();
-break;
-case 2:
-if (login()) {
-cout << "Login successful." << endl;
-}
-break;
-case 3:
-resetPassword();
-break;
-case 4:
-cout << "Goodbye!" << endl;
-break;
-default:
-cout << "Invalid choice. Please try again." << endl;
-break;
-}
-} while (choice != 4);
-return 0;
 }
